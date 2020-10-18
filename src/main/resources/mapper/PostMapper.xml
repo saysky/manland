@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.sens.mapper.PostMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.sens.entity.Post">
+        <id column="id" property="id"></id>
+        <result column="user_id" property="userId"></result>
+        <result column="city_id" property="cityId"></result>
+        <result column="cate_id" property="cateId"></result>
+        <result column="post_title" property="postTitle"></result>
+        <result column="post_summary" property="postSummary"></result>
+        <result column="post_thumbnail" property="postThumbnail"></result>
+        <result column="create_time" property="createTime"></result>
+        <result column="post_status" property="postStatus"></result>
+        <result column="price" property="price"></result>
+        <result column="number" property="number"></result>
+        <result column="img_url" property="imgUrl"></result>
+        <result column="area" property="area"></result>
+        <result column="room_count" property="roomCount"></result>
+        <result column="toilet_count" property="toiletCount"></result>
+        <association property="category" javaType="com.example.sens.entity.Category">
+            <id property="id" column="cate_id"/>
+            <result property="cateName" column="cate_name"/>
+        </association>
+        <association property="city" javaType="com.example.sens.entity.City">
+            <id property="id" column="city_id"/>
+            <result property="cityName" column="city_name"/>
+        </association>
+        <association property="user" javaType="com.example.sens.entity.User">
+            <id property="id" column="user_id"/>
+            <result property="userDisplayName" column="user_display_name"/>
+        </association>
+    </resultMap>
+
+    <select id="findPostByCondition" resultMap="BaseResultMap">
+        SELECT
+        p.id,
+        p.user_id,
+        p.post_title,
+        p.cate_id,
+        p.city_id,
+        p.post_summary,
+        p.post_thumbnail,
+        p.create_time,
+        p.post_status,
+        p.price,
+        p.number,
+        p.img_url,
+        p.area,
+        p.room_count,
+        p.toilet_count,
+        c.cate_name,
+        y.city_name,
+        u.user_display_name
+        FROM
+        post p
+        LEFT JOIN category c ON p.cate_id = c.id
+        LEFT JOIN city y ON p.city_id = y.id
+        LEFT JOIN user u ON p.user_id = u.id
+        <where>
+            <if test="condition.userId != null and condition.userId != -1">
+                p.user_id = #{condition.userId} AND
+            </if>
+            <if test="condition.cateId != null and condition.cateId != -1">
+                p.cate_id = #{condition.cateId} AND
+            </if>
+            <if test="condition.cityId != null and condition.cityId != -1">
+                p.city_id = #{condition.cityId} AND
+            </if>
+            <if test="condition.postStatus != null and condition.postStatus != -1">
+                p.post_status = #{condition.postStatus} AND
+            </if>
+            <if test="condition.postTitle != null and condition.postTitle != ''">
+                p.post_title LIKE CONCAT('%', #{condition.postTitle}, '%') AND
+            </if>
+            p.del_flag = 0 AND
+            c.del_flag = 0 AND
+            u.del_flag = 0 AND
+            y.del_flag = 0
+        </where>
+    </select>
+
+    <select id="countPostByCateId" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM post
+        WHERE cate_id = #{value} AND del_flag = 0
+    </select>
+
+    <select id="getLatestPost" resultMap="BaseResultMap">
+        SELECT
+        p.id,
+        p.user_id,
+        p.post_title,
+        p.post_summary,
+        p.post_thumbnail,
+        p.create_time,
+        p.post_status,
+        p.price,
+        p.number,
+        p.img_url,
+        p.area,
+        p.room_count,
+        p.toilet_count,
+        c.id cate_id,
+        c.cate_name,
+        c.cate_sort,
+        y.city_name,
+        y.id city_id
+        FROM
+        post p,
+        category c,
+        city y
+        <where>
+            p.post_status = 0 AND
+            p.cate_id = c.id AND
+            p.city_id = y.id AND
+            p.del_flag = 0 AND
+            c.del_flag = 0 AND
+            y.del_flag = 0
+        </where>
+        limit #{limit}
+    </select>
+
+    <select id="countByStatus" resultType="java.lang.Integer">
+        SELECT count(*) FROM post WHERE post_status = #{postStatus} AND del_flag = 0
+    </select>
+
+
+</mapper>

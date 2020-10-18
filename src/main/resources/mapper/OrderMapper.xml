@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.sens.mapper.OrderMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.sens.entity.Order">
+        <id column="id" property="id"></id>
+        <result column="post_id" property="postId"></result>
+        <result column="user_id" property="userId"></result>
+        <result column="owner_user_id" property="ownerUserId"></result>
+        <result column="quantity" property="quantity"></result>
+        <result column="status" property="status"></result>
+        <result column="price" property="price"></result>
+        <result column="start_date" property="startDate"></result>
+        <result column="end_date" property="endDate"></result>
+        <result column="create_time" property="createTime"></result>
+        <association property="post" javaType="com.example.sens.entity.Post">
+            <id property="id" column="post_id"/>
+            <result property="postTitle" column="post_title"/>
+            <result property="price" column="post_price"/>
+        </association>
+        <association property="user" javaType="com.example.sens.entity.User">
+            <id property="id" column="user_id"/>
+            <result property="userDisplayName" column="user_display_name"/>
+        </association>
+        <association property="ownerUser" javaType="com.example.sens.entity.User">
+            <id property="id" column="owner_user_id"/>
+            <result property="userDisplayName" column="owner_user_display_name"/>
+        </association>
+    </resultMap>
+
+    <delete id="deleteByPostId">
+        DELETE FROM t_order WHERE post_id = #{value}
+    </delete>
+
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT
+        t.id,
+        t.post_id,
+        t.user_id,
+        t.owner_user_id,
+        t.quantity,
+        t.status,
+        t.price,
+        t.start_date,
+        t.end_date,
+        t.create_time,
+        p.post_title,
+        p.price post_price,
+        u.user_display_name,
+        u2.user_display_name owner_user_display_name
+        FROM
+        t_order t
+        LEFT JOIN user u ON t.user_id = u.id
+        LEFT JOIN user u2 ON t.owner_user_id = u2.id
+        LEFT JOIN post p ON t.post_id = p.id
+        WHERE
+        <if test="condition.userId != null and condition.userId != ''">
+            t.user_id = #{condition.userId} AND
+        </if>
+        <if test="condition.ownerUserId != null and condition.ownerUserId != ''">
+            t.owner_user_id = #{condition.ownerUserId} AND
+        </if>
+        <if test="condition.startDate != null">
+            t.create_time >= STR_TO_DATE( #{condition.startDate}, "%Y-%m-%d" ) AND
+        </if>
+        <if test="condition.endDate != null">
+            t.create_time &lt;= STR_TO_DATE( #{condition.endDate}, "%Y-%m-%d" )+1 AND
+        </if>
+        t.del_flag = 0
+    </select>
+
+    <select id="getTotalPriceSum" resultType="java.lang.Integer">
+        SELECT
+        sum(price)
+        FROM
+        t_order
+        <where>
+            <if test="condition.userId != null and condition.userId != ''">
+                user_id = #{condition.userId} AND
+            </if>
+            <if test="condition.startDate != null">
+                create_time >= STR_TO_DATE( #{condition.startDate}, "%Y-%m-%d" ) AND
+            </if>
+            <if test="condition.endDate != null">
+                create_time &lt;= STR_TO_DATE( #{condition.endDate}, "%Y-%m-%d" )+1 AND
+            </if>
+            del_flag = 0
+        </where>
+    </select>
+
+    <select id="findOverDueOrder" resultType="com.example.sens.entity.Order">
+        SELECT
+            t.id,
+            t.post_id,
+            t.user_id,
+            t.owner_user_id,
+            t.quantity,
+            t.status,
+            t.price,
+            t.start_date,
+            t.end_date,
+            t.create_time
+        FROM t_order t WHERE status = 1 AND end_date &lt; now()
+    </select>
+
+    <update id="updateOverDueOrder">
+        UPDATE t_order
+        SET status = 3
+        WHERE
+        create_time &lt; SUBDATE( now( ), INTERVAL + 10 MINUTE ) AND status = 0 AND del_flag = 0
+    </update>
+
+
+</mapper>
