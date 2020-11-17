@@ -4,7 +4,8 @@
 - 业主功能：注册，登录，房屋管理(房屋添加修改删除上架等)、订单管理、查看电子合同。
 - 租客功能：注册，登录，房屋检索，房屋租赁，查看订单，查看电子合同。
 
-详细介绍：[https://liuyanzhao.com/shop/1317668426088583168.html](https://liuyanzhao.com/shop/1317668426088583168.html)
+详细介绍：[https://liuyanzhao.com/shop/1317668426088583168.html](https://liuyanzhao.com/shop/1317668426088583168.html) <br/>
+预览地址：[https://manland.liuyanzhao.com](https://manland.liuyanzhao.com)
 
 开发时间 2020年10月17日 <br/>
 ## 技术组成
