@@ -1,11 +1,13 @@
 package com.example.sens.controller.admin;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.sens.common.constant.CommonConstant;
 import com.example.sens.entity.*;
 import com.example.sens.enums.RoleEnum;
 import com.example.sens.service.*;
 import com.example.sens.controller.common.BaseController;
 import com.example.sens.dto.JsonResult;
+import com.example.sens.util.Md5Util;
 import com.example.sens.util.PageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -215,6 +217,9 @@ public class UserController extends BaseController {
     public JsonResult saveUser(@ModelAttribute User user,
                                @RequestParam(value = "roleId", required = false) Long roleId) {
         // 1.添加用户
+        if(user.getId() == null) {
+            user.setUserPass(Md5Util.toMd5(user.getUserPass(), CommonConstant.PASSWORD_SALT, 10));
+        }
         userService.insertOrUpdate(user);
         if(roleId != null) {
             // 2.先删除该用户的角色关联
