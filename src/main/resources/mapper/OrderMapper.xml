@@ -17,6 +17,7 @@
             <id property="id" column="post_id"/>
             <result property="postTitle" column="post_title"/>
             <result property="price" column="post_price"/>
+            <result property="deposit" column="deposit"/>
         </association>
         <association property="user" javaType="com.example.sens.entity.User">
             <id property="id" column="user_id"/>
@@ -46,6 +47,7 @@
         t.create_time,
         p.post_title,
         p.price post_price,
+        p.deposit,
         u.user_display_name,
         u2.user_display_name owner_user_display_name
         FROM
@@ -101,6 +103,22 @@
             t.end_date,
             t.create_time
         FROM t_order t WHERE status = 1 AND end_date &lt; now()
+    </select>
+
+    <select id="findByPostId" resultMap="BaseResultMap">
+         SELECT
+            t.id,
+            t.post_id,
+            t.user_id,
+            t.owner_user_id,
+            t.quantity,
+            t.status,
+            t.price,
+            t.start_date,
+            t.end_date,
+            t.create_time
+        FROM t_order t WHERE status = 1 AND post_id = #{postId} AND end_date > now()
+        LIMIT 1
     </select>
 
     <update id="updateOverDueOrder">

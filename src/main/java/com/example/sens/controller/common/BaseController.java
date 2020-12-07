@@ -59,34 +59,20 @@ public abstract class BaseController {
     public Boolean loginUserIsAdmin() {
         User loginUser = getLoginUser();
         if (loginUser != null) {
-            return  RoleEnum.ADMIN.getValue().equalsIgnoreCase(loginUser.getRole());
+            return  RoleEnum.ADMIN.getValue().equalsIgnoreCase(loginUser.getRole().getRole());
         }
         return false;
     }
-
-    /**
-     * 当前用户是工作人员
-     *
-     * @return
-     */
-    public Boolean loginUserIsOwner() {
-        User loginUser = getLoginUser();
-        if (loginUser != null) {
-            return  RoleEnum.OWNER.getValue().equalsIgnoreCase(loginUser.getRole());
-        }
-        return false;
-    }
-
 
     /**
      * 当前用户是消费者
      *
      * @return
      */
-    public Boolean loginUserIsTenant() {
+    public Boolean loginUserIsUser() {
         User loginUser = getLoginUser();
         if (loginUser != null) {
-            return RoleEnum.TENANT.getValue().equalsIgnoreCase(loginUser.getRole());
+            return RoleEnum.USER.getValue().equalsIgnoreCase(loginUser.getRole().getRole());
         }
         return false;
     }

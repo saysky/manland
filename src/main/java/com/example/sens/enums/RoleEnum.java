@@ -14,14 +14,9 @@ public enum RoleEnum {
     ADMIN("admin"),
 
     /**
-     * 租客
+     * 用户
      */
-    TENANT("tenant"),
-
-    /**
-     * 业主
-     */
-    OWNER("owner");
+    USER("user");
 
     private String value;
 

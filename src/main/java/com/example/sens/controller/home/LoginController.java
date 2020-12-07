@@ -117,8 +117,7 @@ public class LoginController extends BaseController {
     public JsonResult getRegister(@RequestParam("userName") String userName,
                                   @RequestParam("userPass") String userPass,
                                   @RequestParam("idCard") String idCard,
-                                  @RequestParam("userDisplayName") String userDisplayName,
-                                  @RequestParam("userType") String userType) {
+                                  @RequestParam("userDisplayName") String userDisplayName) {
         // 1.校验是否输入完整
         if (StringUtils.isEmpty(userName) || StringUtils.isEmpty(userPass) || StringUtils.isEmpty(idCard)) {
             return JsonResult.error("请填写完整信息");
@@ -130,10 +129,8 @@ public class LoginController extends BaseController {
         }
 
         // 3.密码长度是否合法
-        Role role = roleService.findByRoleName(userType);
-        if (RoleEnum.ADMIN.getValue().equals(userType) || role == null) {
-            return JsonResult.error("用户类型不存在");
-        }
+        Role role = roleService.findByRoleName(RoleEnum.USER.getValue());
+
 
         //3.创建用户
         User user = new User();

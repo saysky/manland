@@ -38,7 +38,7 @@ public class URLPathMatchingFilter extends PathMatchingFilter {
         Subject subject = SecurityUtils.getSubject();
         if (!subject.isAuthenticated()) {
             // 如果没有登录, 进入登录流程
-            WebUtils.issueRedirect(request, response, "/");
+            WebUtils.issueRedirect(request, response, "/login");
             return false;
         }
 

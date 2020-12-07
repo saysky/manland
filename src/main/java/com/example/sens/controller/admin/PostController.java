@@ -44,6 +44,9 @@ public class PostController extends BaseController {
     @Autowired
     private CategoryService categoryService;
 
+    @Autowired
+    private OrderService orderService;
+
     public static final String TITLE = "title";
 
     public static final String CONTENT = "content";
@@ -68,26 +71,82 @@ public class PostController extends BaseController {
         condition.setPostStatus(status);
 
         Page page = PageUtil.initMpPage(pageNumber, pageSize, sort, order);
-        Page<Post> postPage = null;
         Post postCondition = new Post();
-        if (loginUserIsAdmin()) {
-            // 管理员
-            postPage = postService.findPostByCondition(postCondition, page);
-        } else if(loginUserIsOwner()) {
-            // 业主
-            postCondition.setUserId(getLoginUserId());
-            postPage = postService.findPostByCondition(postCondition, page);
-        }
+        Page<Post> postPage = postService.findPostByCondition(postCondition, page);
         List<Post> postList = postPage.getRecords();
-        for (Post post : postList) {
-            post.setCategory(categoryService.get(post.getCateId()));
-        }
+
         //封装分类和标签
         model.addAttribute("posts", postList);
         model.addAttribute("pageInfo", PageUtil.convertPageVo(page));
         model.addAttribute("status", status);
         model.addAttribute("order", order);
         model.addAttribute("sort", sort);
+
+        model.addAttribute("type", "all");
+        return "admin/admin_post";
+    }
+
+    /**
+     * 我的出租
+     *
+     * @param model model
+     * @return 模板路径admin/admin_post
+     */
+    @GetMapping("/lease")
+    public String lease(Model model,
+                        @RequestParam(value = "status", defaultValue = "-1") Integer status,
+                        @RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
+                        @RequestParam(value = "size", defaultValue = "10") Integer pageSize,
+                        @RequestParam(value = "sort", defaultValue = "createTime") String sort,
+                        @RequestParam(value = "order", defaultValue = "desc") String order,
+                        @ModelAttribute SearchVo searchVo) {
+
+        Post condition = new Post();
+        condition.setPostStatus(status);
+        condition.setUserId(getLoginUserId());
+
+        Page page = PageUtil.initMpPage(pageNumber, pageSize, sort, order);
+        Page<Post> postPage = postService.findPostByCondition(condition, page);
+        List<Post> postList = postPage.getRecords();
+
+        //封装分类和标签
+        model.addAttribute("posts", postList);
+        model.addAttribute("pageInfo", PageUtil.convertPageVo(page));
+        model.addAttribute("status", status);
+        model.addAttribute("order", order);
+        model.addAttribute("sort", sort);
+
+        model.addAttribute("type", "lease");
+        return "admin/admin_post";
+    }
+
+    /**
+     * 我的租赁
+     *
+     * @param model model
+     * @return 模板路径admin/admin_post
+     */
+    @GetMapping("/rent")
+    public String rent(Model model,
+                       @RequestParam(value = "status", defaultValue = "-1") Integer status,
+                       @RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
+                       @RequestParam(value = "size", defaultValue = "10") Integer pageSize,
+                       @RequestParam(value = "sort", defaultValue = "createTime") String sort,
+                       @RequestParam(value = "order", defaultValue = "desc") String order,
+                       @ModelAttribute SearchVo searchVo) {
+
+        Page page = PageUtil.initMpPage(pageNumber, pageSize, sort, order);
+        Page<Post> postPage = postService.findByRentUserId(getLoginUserId(), page);
+        List<Post> postList = postPage.getRecords();
+
+        //封装分类和标签
+        model.addAttribute("posts", postList);
+        model.addAttribute("pageInfo", PageUtil.convertPageVo(page));
+        model.addAttribute("status", status);
+        model.addAttribute("order", order);
+        model.addAttribute("sort", sort);
+
+        model.addAttribute("type", "rent");
         return "admin/admin_post";
     }
 
@@ -117,6 +176,15 @@ public class PostController extends BaseController {
     @PostMapping(value = "/save")
     @ResponseBody
     public JsonResult pushPost(@ModelAttribute Post post) {
+        if (post.getId() != null) {
+            // 只允许更新部分字段
+            Post temp = new Post();
+            temp.setId(post.getId());
+            temp.setPostContent(post.getPostContent());
+            temp.setPostSummary(post.getPostSummary());
+            temp.setPostEditor(post.getPostEditor());
+            post = temp;
+        }
         // 1、提取摘要
         int postSummary = 100;
         //房屋摘要
@@ -144,25 +212,6 @@ public class PostController extends BaseController {
         return JsonResult.success("发布成功");
     }
 
-
-    /**
-     * 处理移至回收站的请求
-     *
-     * @param postId 房屋编号
-     * @return 重定向到/admin/post
-     */
-    @PostMapping(value = "/throw")
-    @ResponseBody
-    public JsonResult moveToTrash(@RequestParam("id") Long postId) {
-        Post post = postService.get(postId);
-        if (post == null) {
-            throw new MyBusinessException("房屋不存在");
-        }
-        post.setPostStatus(PostStatusEnum.RECYCLE.getCode());
-        postService.update(post);
-        return JsonResult.success("操作成功");
-
-    }
 
     /**
      * 处理房屋为发布的状态
@@ -196,36 +245,22 @@ public class PostController extends BaseController {
         if (post == null) {
             throw new MyBusinessException("房屋不存在");
         }
-        postService.delete(postId);
-        return JsonResult.success("删除成功");
-    }
+        if (PostStatusEnum.OFF_SALE.getCode().equals(post.getPostStatus())) {
+            throw new MyBusinessException("该房屋已出租，不能删除");
+        }
+        // 判断是否有有效订单
+        // 如果有有效订单，不能删除
+        Order order = orderService.findByPostId(postId);
+        if (order != null) {
+            throw new MyBusinessException("该房屋已出租，不能删除");
+        }
 
-    /**
-     * 批量删除
-     *
-     * @param ids 房屋ID列表
-     * @return 重定向到/admin/post
-     */
-    @DeleteMapping(value = "/batchDelete")
-    @ResponseBody
-    public JsonResult batchDelete(@RequestParam("ids") List<Long> ids) {
-        //批量操作
-        //1、防止恶意操作
-        if (ids == null || ids.size() == 0 || ids.size() >= 100) {
-            return new JsonResult(ResultCodeEnum.FAIL.getCode(), "参数不合法!");
+        // 判断权限
+        if(!Objects.equals(post.getUserId(), getLoginUserId()) && !loginUserIsAdmin()) {
+            throw new MyBusinessException("没有权限操作");
         }
-        //2、检查用户权限
-        //房屋作者才可以删除
-        List<Post> postList = postService.findByBatchIds(ids);
-        //3、如果当前状态为回收站，则删除；否则，移到回收站
-        for (Post post : postList) {
-            if (Objects.equals(post.getPostStatus(), PostStatusEnum.RECYCLE.getCode())) {
-                postService.delete(post.getId());
-            } else {
-                post.setPostStatus(PostStatusEnum.RECYCLE.getCode());
-                postService.update(post);
-            }
-        }
+
+        postService.delete(postId);
         return JsonResult.success("删除成功");
     }
 

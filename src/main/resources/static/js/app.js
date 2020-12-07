@@ -203,17 +203,18 @@ function push(status) {
     const cateId = $('#cateId').val();
     const postThumbnail = $('#postThumbnail').val();
     const price = $('#price').val();
-    const postContent = $("#postContent").val();
     const postEditor = $("#edit").froalaEditor('html.get');
+    const postContent = $("#postContent").froalaEditor('html.get');
     const number = $('#number').val();
     const cityId = $('#cityId').val();
     const roomCount = $('#roomCount').val();
     const toiletCount = $('#toiletCount').val();
+    const deposit = $('#deposit').val();
     const area = $('#area').val();
-    if(postTitle == null || cateId == null || cateId == null ||
+    if (postTitle == null || cateId == null || cateId == null ||
         postThumbnail == null || price == null || postContent == null ||
         number == null || postEditor == null || cityId == null ||
-        roomCount == null || toiletCount == null || area == null) {
+        roomCount == null || toiletCount == null || area == null || deposit == null) {
         showMsg("请输入完整信息", "info", 2000);
         return;
     }
@@ -235,42 +236,47 @@ function push(status) {
             'roomCount': roomCount,
             'toiletCount': toiletCount,
             'area': area,
+            'deposit': deposit,
             'postEditor': postEditor
         },
         success: function (data) {
             if (data.code == 1) {
-                if(status == 1) {
-                    showMsg("操作成功", "success", 2000);
-                } else {
-                    showMsgAndRedirect("操作成功", "success", 1000, "/admin/post");
-                }
+                showMsgAndRedirect("发布成功", "success", 1000, "/admin/post/lease");
             } else {
                 showMsg(data.msg, "error", 2000);
-
             }
         }
     });
 }
 
 
-function getLoginRole() {
-    $.ajax({
-        type: 'GET',
-        url: '/admin/currentRole',
-        async: false,
-        success: function (data) {
-            if (data.code == 0) {
-                showMsg(data.msg, "error", 1000);
-            } else {
-                let role = data.result;
-                if(role == 'tenant') {
-                    $(".role-customer-hide").hide();
-                } else {
-                    $(".role-owner-hide").hide();
-                }
-            }
+/**
+ * 发布公告
+ */
+function saveNotice() {
+    const id = $('#noticeId').val();
+    const title = $('#title').val();
+    const content = $("#content").froalaEditor('html.get');
+    if (title == null || content == null) {
+        showMsg("请输入完整信息", "info", 2000);
+        return;
+    }
 
+    $.ajax({
+        type: 'POST',
+        url: '/admin/notice/save',
+        async: false,
+        data: {
+            'id': id,
+            'title': title,
+            'content': content
+        },
+        success: function (data) {
+            if (data.code == 1) {
+                showMsgAndRedirect("发布成功", "success", 1000, "/admin/notice");
+            } else {
+                showMsg(data.msg, "error", 2000);
+            }
         }
     });
-};
-getLoginRole();
+}

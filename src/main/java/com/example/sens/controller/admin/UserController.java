@@ -47,8 +47,8 @@ public class UserController extends BaseController {
      *
      * @return 模板路径admin/admin_user
      */
-    @GetMapping("/customer")
-    public String customers(
+    @GetMapping
+    public String users(
             @RequestParam(value = "status", defaultValue = "0") Integer status,
             @RequestParam(value = "keywords", defaultValue = "") String keywords,
             @RequestParam(value = "searchType", defaultValue = "") String searchType,
@@ -69,58 +69,11 @@ public class UserController extends BaseController {
                 condition.setIdCard(keywords);
             }
         }
-        String role = RoleEnum.TENANT.getValue();
-        Page<User> users = userService.findByRoleAndCondition(role, condition, page);
-
-        //角色列表
-        Integer maxLevel = roleService.findMaxLevelByUserId(getLoginUserId());
-        List<Role> roles = roleService.findByLessThanLevel(maxLevel);
-        model.addAttribute("roles", roles);
-        model.addAttribute("users", users.getRecords());
-        model.addAttribute("pageInfo", PageUtil.convertPageVo(page));
-        model.addAttribute("status", status);
-        model.addAttribute("keywords", keywords);
-        model.addAttribute("searchType", searchType);
-        model.addAttribute("sort", sort);
-        model.addAttribute("order", order);
-        model.addAttribute("currentRole", role);
-        return "admin/admin_user";
-    }
-
-    /**
-     * 查询所有分类并渲染user页面
-     *
-     * @return 模板路径admin/admin_user
-     */
-    @GetMapping("/worker")
-    public String works(
-            @RequestParam(value = "status", defaultValue = "0") Integer status,
-            @RequestParam(value = "keywords", defaultValue = "") String keywords,
-            @RequestParam(value = "searchType", defaultValue = "") String searchType,
-            @RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
-            @RequestParam(value = "size", defaultValue = "10") Integer pageSize,
-            @RequestParam(value = "sort", defaultValue = "createTime") String sort,
-            @RequestParam(value = "order", defaultValue = "desc") String order, Model model) {
-        //用户列表
-        Page page = PageUtil.initMpPage(pageNumber, pageSize, sort, order);
-        User condition = new User();
-        condition.setStatus(status);
-        if (!StringUtils.isBlank(keywords)) {
-            if (USER_NAME.equals(searchType)) {
-                condition.setUserName(keywords);
-            } else if (USER_DISPLAY_NAME.equals(searchType)) {
-                condition.setUserDisplayName(keywords);
-            } else if (EMAIL.equals(searchType)) {
-                condition.setIdCard(keywords);
-            }
+        Page<User> users = userService.findByRoleAndCondition(CommonConstant.NONE, condition, page);
+        for(User user : users.getRecords()) {
+            user.setRole(roleService.findByUserId(user.getId()));
         }
-        String role = RoleEnum.OWNER.getValue();
-        Page<User> users = userService.findByRoleAndCondition(role, condition, page);
 
-        //角色列表
-        Integer maxLevel = roleService.findMaxLevelByUserId(getLoginUserId());
-        List<Role> roles = roleService.findByLessThanLevel(maxLevel);
-        model.addAttribute("roles", roles);
         model.addAttribute("users", users.getRecords());
         model.addAttribute("pageInfo", PageUtil.convertPageVo(page));
         model.addAttribute("status", status);
@@ -128,9 +81,9 @@ public class UserController extends BaseController {
         model.addAttribute("searchType", searchType);
         model.addAttribute("sort", sort);
         model.addAttribute("order", order);
-        model.addAttribute("currentRole", role);
         return "admin/admin_user";
     }
+
 
 
     /**

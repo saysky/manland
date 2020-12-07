@@ -44,23 +44,54 @@ public class OrderController extends BaseController {
                          @RequestParam(value = "order", defaultValue = "desc") String order, Model model) {
         Page page = PageUtil.initMpPage(pageNumber, pageSize, sort, order);
         Page<Order> orderPage = null;
-        if (loginUserIsTenant()) {
-            // 租客
-            Order orderCondition = new Order();
-            orderCondition.setUserId(getLoginUserId());
-            orderPage = orderService.findAll(orderCondition, page);
-        } else if (loginUserIsOwner()) {
-            // 业主
-            Order orderCondition = new Order();
-            orderCondition.setOwnerUserId(getLoginUserId());
-            orderPage = orderService.findAll(orderCondition, page);
-        } else {
-            // 管理员
-            Order orderCondition = new Order();
-            orderPage = orderService.findAll(orderCondition, page);
-        }
+
+        Order orderCondition = new Order();
+        orderPage = orderService.findAll(orderCondition, page);
         model.addAttribute("orders", orderPage.getRecords());
         model.addAttribute("pageInfo", PageUtil.convertPageVo(page));
+        return "admin/admin_order";
+    }
+
+    /**
+     * 我出租的房屋订单
+     *
+     * @return 模板路径admin/admin_order
+     */
+    @GetMapping("/lease")
+    public String lease(@RequestParam(value = "page", defaultValue = "0") Integer pageNumber,
+                        @RequestParam(value = "size", defaultValue = "10") Integer pageSize,
+                        @RequestParam(value = "sort", defaultValue = "id") String sort,
+                        @RequestParam(value = "order", defaultValue = "desc") String order, Model model) {
+        Page page = PageUtil.initMpPage(pageNumber, pageSize, sort, order);
+        Order orderCondition = new Order();
+        orderCondition.setOwnerUserId(getLoginUserId());
+        Page<Order> orderPage = orderService.findAll(orderCondition, page);
+        model.addAttribute("orders", orderPage.getRecords());
+        model.addAttribute("pageInfo", PageUtil.convertPageVo(page));
+
+        model.addAttribute("type", "lease");
+        return "admin/admin_order";
+    }
+
+
+    /**
+     * 我的租房订单
+     *
+     * @return 模板路径admin/admin_order
+     */
+    @GetMapping("/rent")
+    public String rent(@RequestParam(value = "page", defaultValue = "0") Integer pageNumber,
+                       @RequestParam(value = "size", defaultValue = "10") Integer pageSize,
+                       @RequestParam(value = "sort", defaultValue = "id") String sort,
+                       @RequestParam(value = "order", defaultValue = "desc") String order, Model model) {
+        Page page = PageUtil.initMpPage(pageNumber, pageSize, sort, order);
+        Order orderCondition = new Order();
+        orderCondition.setUserId(getLoginUserId());
+        Page<Order> orderPage  = orderService.findAll(orderCondition, page);
+        model.addAttribute("orders", orderPage.getRecords());
+        model.addAttribute("pageInfo", PageUtil.convertPageVo(page));
+
+        model.addAttribute("type", "rent");
         return "admin/admin_order";
     }
 
@@ -77,6 +108,9 @@ public class OrderController extends BaseController {
         Order order = orderService.get(id);
         if (order == null) {
             return JsonResult.error("订单不存在");
+        }
+        if (OrderStatusEnum.HAS_PAY.getCode().equals(order.getStatus())) {
+            return JsonResult.error("订单生效中，不能删除");
         }
 
         orderService.delete(id);
@@ -121,7 +155,7 @@ public class OrderController extends BaseController {
         order.setStatus(OrderStatusEnum.CLOSED.getCode());
         orderService.update(order);
 
-        return JsonResult.success("关闭成功");
+        return JsonResult.success("取消订单成功");
     }
 
     /**
@@ -144,18 +178,15 @@ public class OrderController extends BaseController {
         Page<Order> orderPage = null;
         Order orderCondition = new Order();
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        if(StringUtils.isNotEmpty(startDate)) {
+        if (StringUtils.isNotEmpty(startDate)) {
             orderCondition.setStartDate(dateFormat.parse(startDate));
         }
-        if(StringUtils.isNotEmpty(endDate)) {
+        if (StringUtils.isNotEmpty(endDate)) {
             orderCondition.setEndDate(dateFormat.parse(endDate));
         }
-        if (loginUserIsTenant()) {
-            // 租客
+        if (loginUserIsUser()) {
+            // 用户
             orderCondition.setUserId(getLoginUserId());
-        } else if (loginUserIsOwner()) {
-            // 业主
-            orderCondition.setOwnerUserId(getLoginUserId());
         }
         orderPage = orderService.findAll(orderCondition, page);
 

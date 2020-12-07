@@ -8,6 +8,7 @@ import com.example.sens.enums.OrderStatusEnum;
 import com.example.sens.enums.PostStatusEnum;
 import com.example.sens.service.*;
 import com.example.sens.util.DateUtil;
+import com.example.sens.util.FileUtil;
 import com.example.sens.util.PageUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.ServletInputStream;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -60,8 +69,12 @@ public class FrontPostController extends BaseController {
                            @RequestParam(value = "postTitle", defaultValue = "") String postTitle,
                            @RequestParam(value = "cityId", defaultValue = "-1") Long cityId,
                            @RequestParam(value = "cateId", defaultValue = "-1") Long cateId,
+                           @RequestParam(value = "area", defaultValue = "") String area,
+                           @RequestParam(value = "price", defaultValue = "") String price,
                            @RequestParam(value = "status", defaultValue = "-1") Integer status,
                            Model model) {
+        Post condition = new Post();
+
         List<Category> categoryList = categoryService.findAll();
         model.addAttribute("categoryList", categoryList);
 
@@ -71,9 +84,27 @@ public class FrontPostController extends BaseController {
 
         model.addAttribute("postCount", postService.count(null));
 
+        try {
+            if (StringUtils.isNotEmpty(price)) {
+                String[] priceArr = price.split("-");
+                if (priceArr.length == 2) {
+                    condition.setMinPrice(Integer.valueOf(priceArr[0]));
+                    condition.setMaxPrice(Integer.valueOf(priceArr[1]));
+                }
+            }
+            if (StringUtils.isNotEmpty(area)) {
+                String[] areaArr = price.split("-");
+                if (areaArr.length == 2) {
+                    condition.setMinArea(Integer.valueOf(areaArr[0]));
+                    condition.setMaxArea(Integer.valueOf(areaArr[1]));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // 查询日期列表
         Page page = PageUtil.initMpPage(pageNumber, pageSize, sort, order);
-        Post condition = new Post();
         condition.setPostTitle(postTitle);
         condition.setPostStatus(status);
         condition.setCateId(cateId);
@@ -85,6 +116,8 @@ public class FrontPostController extends BaseController {
         model.addAttribute("cityId", cityId);
         model.addAttribute("cateId", cateId);
         model.addAttribute("status", status);
+        model.addAttribute("area", area);
+        model.addAttribute("price", price);
 
         // 侧边栏
         model.addAttribute("onCount", postService.countByStatus(PostStatusEnum.ON_SALE.getCode()));
@@ -95,7 +128,7 @@ public class FrontPostController extends BaseController {
 
 
     /**
-     * 帖子详情
+     * 房屋详情
      *
      * @param id
      * @param model
@@ -123,7 +156,7 @@ public class FrontPostController extends BaseController {
         model.addAttribute("post", post);
 
         boolean allowEdit = getLoginUser() != null && (loginUserIsAdmin() || Objects.equals(post.getUserId(), getLoginUserId()));
-        model.addAttribute("allowEdit", allowEdit );
+        model.addAttribute("allowEdit", allowEdit);
 
         String[] imgUrlList = post.getImgUrl().split(",");
         model.addAttribute("imgUrlList", imgUrlList);
@@ -222,6 +255,10 @@ public class FrontPostController extends BaseController {
             return JsonResult.error("房屋不存在");
         }
 
+        if (Objects.equals(post.getUserId(), user.getId())) {
+            return JsonResult.error("不能租赁自己的房子哦");
+        }
+
         if (!PostStatusEnum.ON_SALE.getCode().equals(post.getPostStatus())) {
             return JsonResult.error("房屋已租出，暂时无法预定");
         }
@@ -240,7 +277,7 @@ public class FrontPostController extends BaseController {
         order.setUserId(user.getId());
         order.setOwnerUserId(post.getUserId());
         order.setStatus(OrderStatusEnum.NOT_PAY.getCode());
-        order.setPrice(post.getPrice() * quantity);
+        order.setPrice(post.getPrice() * quantity + post.getDeposit());
         order.setCreateTime(new Date());
         order.setUpdateTime(new Date());
         orderService.insert(order);
@@ -276,6 +313,7 @@ public class FrontPostController extends BaseController {
 
     /**
      * 电子合同
+     *
      * @param orderId
      * @return
      */
@@ -292,14 +330,14 @@ public class FrontPostController extends BaseController {
 
         order.setUser(userService.get(order.getUserId()));
         order.setOwnerUser(userService.get(order.getOwnerUserId()));
-        User user = getLoginUser();
-        if (user == null) {
-            return "redirect:/login";
-        }
-
-        if (!Objects.equals(user.getId(), order.getUserId()) && !Objects.equals(user.getId(), order.getOwnerUserId()) && !loginUserIsAdmin()) {
-            return this.renderNotAllowAccess();
-        }
+//        User user = getLoginUser();
+//        if (user == null) {
+//            return "redirect:/login";
+//        }
+//
+//        if (!Objects.equals(user.getId(), order.getUserId()) && !Objects.equals(user.getId(), order.getOwnerUserId()) && !loginUserIsAdmin()) {
+//            return this.renderNotAllowAccess();
+//        }
 
         model.addAttribute("order", order);
 
@@ -309,13 +347,66 @@ public class FrontPostController extends BaseController {
     }
 
 
-        /**
-         * 支付页面
-         *
-         * @param orderId
-         * @param model
-         * @return
-         */
+    /**
+     * 下载合同
+     *
+     * @param orderId
+     * @param response
+     */
+    @GetMapping("/agreement/download")
+    public void agreementDownload(@RequestParam("orderId") Long orderId,
+                                  HttpServletRequest request,
+                                  HttpServletResponse response) {
+
+
+        StringBuffer requestURL = request.getRequestURL();
+        String tempContextUrl = requestURL.delete(requestURL.length() - request.getRequestURI().length(), requestURL.length()).append("/").toString();
+        ServletOutputStream out = null;
+        InputStream inputStream = null;
+        try {
+            Order order = orderService.get(orderId);
+
+            User user = userService.get(order.getUserId());
+            User ownerUser = userService.get(order.getOwnerUserId());
+            String pdfName = ownerUser.getUserDisplayName() + "&" + user.getUserDisplayName() + "租房合同.html";
+            // 获取外部文件流
+            URL url = new URL(tempContextUrl + "agreement?orderId=" + orderId);
+
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(3 * 1000);
+            //防止屏蔽程序抓取而返回403错误
+            conn.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
+            inputStream = conn.getInputStream();
+            int len = 0;
+            // 输出 下载的响应头，如果下载的文件是中文名，文件名需要经过url编码
+            response.setContentType("text/html;charset=utf-8");
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(pdfName, "UTF-8"));
+            response.setHeader("Cache-Control", "no-cache");
+            out = response.getOutputStream();
+            byte[] buffer = new byte[1024];
+            while ((len = inputStream.read(buffer)) > 0) {
+                out.write(buffer, 0, len);
+            }
+            out.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (Exception e) {
+                }
+            }
+        }
+    }
+
+    /**
+     * 支付页面
+     *
+     * @param orderId
+     * @param model
+     * @return
+     */
     @GetMapping("/pay")
     public String pay(@RequestParam("orderId") Long orderId, Model model) {
         Order order = orderService.get(orderId);
@@ -359,7 +450,7 @@ public class FrontPostController extends BaseController {
     @Transactional
     @ResponseBody
     public JsonResult paySuccess(@RequestParam(value = "orderId") Long orderId) {
-        User user = getLoginUser();
+        User user = userService.get(getLoginUserId());
         if (user == null) {
             return JsonResult.error("请先登录");
         }
@@ -369,10 +460,13 @@ public class FrontPostController extends BaseController {
             return JsonResult.error("订单不存在");
         }
 
+        if (user.getMoney() < order.getPrice()) {
+            return JsonResult.error("余额不足，请充值");
+        }
+
         if (!Objects.equals(user.getId(), order.getUserId())) {
             return JsonResult.error("没有权限");
         }
-
 
         Post post = postService.get(order.getPostId());
         if (post == null || !Objects.equals(post.getPostStatus(), PostStatusEnum.ON_SALE.getCode())) {
@@ -384,6 +478,17 @@ public class FrontPostController extends BaseController {
 
         post.setPostStatus(PostStatusEnum.OFF_SALE.getCode());
         postService.update(post);
+
+        // 这里暂不用乐观锁实现，忽略并发问题
+        // 我的余额减少
+        user.setMoney(user.getMoney() - order.getPrice());
+        userService.update(user);
+
+        // 对方的余额增加
+        User ownerUser = userService.get(order.getOwnerUserId());
+        ownerUser.setMoney(ownerUser.getMoney() + order.getPrice());
+        userService.update(ownerUser);
+
 
         return JsonResult.success("支付成功", order.getId());
     }

@@ -49,5 +49,12 @@ public interface OrderMapper extends BaseMapper<Order> {
      * @return
      */
     List<Order> findOverDueOrder();
+
+    /**
+     * 查询有效订单
+     * @param postId
+     * @return
+     */
+    Order findByPostId(Long postId);
 }
 

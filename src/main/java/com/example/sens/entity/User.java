@@ -69,9 +69,14 @@ public class User extends BaseEntity {
     private String phone;
 
     /**
+     * 余额
+     */
+    private Long money;
+
+    /**
      * 角色名称
      */
     @TableField(exist = false)
-    private String role;
+    private Role role;
 
 }

@@ -18,6 +18,7 @@
         <result column="area" property="area"></result>
         <result column="room_count" property="roomCount"></result>
         <result column="toilet_count" property="toiletCount"></result>
+        <result column="deposit" property="deposit"></result>
         <association property="category" javaType="com.example.sens.entity.Category">
             <id property="id" column="cate_id"/>
             <result property="cateName" column="cate_name"/>
@@ -47,6 +48,7 @@
         p.number,
         p.img_url,
         p.area,
+        p.deposit,
         p.room_count,
         p.toilet_count,
         c.cate_name,
@@ -73,6 +75,50 @@
             <if test="condition.postTitle != null and condition.postTitle != ''">
                 p.post_title LIKE CONCAT('%', #{condition.postTitle}, '%') AND
             </if>
+            <if test="condition.minPrice != null and condition.maxPrice != null">
+                p.price >= #{condition.minPrice} and p.price &lt; #{condition.maxPrice} and
+            </if>
+            <if test="condition.minArea != null and condition.minArea != null">
+                p.area >= #{condition.minArea} and p.area &lt; #{condition.maxArea} and
+            </if>
+            p.del_flag = 0 AND
+            c.del_flag = 0 AND
+            u.del_flag = 0 AND
+            y.del_flag = 0
+        </where>
+    </select>
+
+    <select id="findByRentUserId" resultMap="BaseResultMap">
+        SELECT
+        p.id,
+        p.user_id,
+        p.post_title,
+        p.cate_id,
+        p.city_id,
+        p.post_summary,
+        p.post_thumbnail,
+        p.create_time,
+        p.post_status,
+        p.price,
+        p.number,
+        p.img_url,
+        p.area,
+        p.deposit,
+        p.room_count,
+        p.toilet_count,
+        c.cate_name,
+        y.city_name,
+        u.user_display_name
+        FROM
+        t_order o, post p
+        LEFT JOIN category c ON p.cate_id = c.id
+        LEFT JOIN city y ON p.city_id = y.id
+        LEFT JOIN user u ON p.user_id = u.id
+        <where>
+            p.id = o.post_id AND
+            o.user_id = #{userId} AND
+            o.status = 1 AND
+            o.end_date > now() AND
             p.del_flag = 0 AND
             c.del_flag = 0 AND
             u.del_flag = 0 AND
@@ -98,6 +144,7 @@
         p.number,
         p.img_url,
         p.area,
+        p.deposit,
         p.room_count,
         p.toilet_count,
         c.id cate_id,

@@ -38,6 +38,13 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public Page<Post> findByRentUserId(Long userId, Page<Post> page) {
+        List<Post> postList = postMapper.findByRentUserId(userId, page);
+        return page.setRecords(postList);
+    }
+
+
+    @Override
     public BaseMapper<Post> getRepository() {
         return postMapper;
     }

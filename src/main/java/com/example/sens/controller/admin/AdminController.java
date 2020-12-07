@@ -82,4 +82,11 @@ public class AdminController extends BaseController {
         return JsonResult.success("", role.getRole());
     }
 
+
+    @GetMapping("/pay")
+    public String pay(@RequestParam("money") Integer money, Model model) {
+        model.addAttribute("money", money);
+        return "admin/alipay";
+    }
+
 }

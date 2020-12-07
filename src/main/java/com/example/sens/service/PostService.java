@@ -22,6 +22,16 @@ public interface PostService extends BaseService<Post, Long> {
     Page<Post> findPostByCondition(Post condition, Page<Post> page);
 
 
+
+    /**
+     * 根据租客userId查询
+     *
+     * @param userId
+     * @return
+     */
+    Page<Post> findByRentUserId(Long userId, Page<Post> page);
+
+
     /**
      * 获得最新房屋
      *

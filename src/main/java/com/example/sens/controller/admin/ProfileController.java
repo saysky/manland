@@ -32,8 +32,7 @@ public class ProfileController extends BaseController {
      */
     @GetMapping("/profile")
     public String profile(Model model) {
-        //1.用户信息
-        User user = getLoginUser();
+        User user = userService.get(getLoginUserId());
         model.addAttribute("user", user);
         return "admin/admin_profile";
     }

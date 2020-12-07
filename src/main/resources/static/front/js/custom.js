@@ -129,8 +129,8 @@ $('#btn-addOrder').click(function () {
                 },
                 success: function (data) {
                     if (data.code == 1) {
-                        alert('下单成功，请签订合同');
-                        window.location.href = '/agreement?orderId=' + data.result;
+                        alert('订单生成成功，请签订合同');
+                        window  .open('/agreement?orderId=' + data.result);
                     } else {
                         alert(data.msg);
                     }
@@ -158,7 +158,7 @@ $('#btn-pay').click(function () {
         success: function (data) {
             if (data.code == 1) {
                 alert('支付成功');
-                window.location.href = '/admin/order'
+                window.location.href = '/admin/order/rent'
             } else {
                 alert(data.msg);
             }

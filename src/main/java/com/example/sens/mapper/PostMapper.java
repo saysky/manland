@@ -2,6 +2,7 @@ package com.example.sens.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.sens.common.constant.CommonConstant;
 import com.example.sens.entity.Post;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -21,10 +22,20 @@ public interface PostMapper extends BaseMapper<Post> {
      * @param page
      * @return
      */
-    List<Post> findPostByCondition(@Param("condition") Post condition, Page page);
+    List<Post> findPostByCondition(@Param(CommonConstant.CONDITION) Post condition, Page page);
+
+    /**
+     * 根据租客用户ID查询
+     *
+     * @param userId
+     * @param page
+     * @return
+     */
+    List<Post> findByRentUserId(@Param("userId") Long userId, Page page);
 
     /**
      * 统计该分类的房屋
+     *
      * @param cateId
      * @return
      */
@@ -33,6 +44,7 @@ public interface PostMapper extends BaseMapper<Post> {
 
     /**
      * 获得最新房屋
+     *
      * @param limit
      * @return
      */

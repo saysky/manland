@@ -23,9 +23,16 @@ public enum OrderStatusEnum {
     FINISHED(2),
 
     /**
-     * 已关闭
+     * 已关闭,已取消
      */
-    CLOSED(3);
+    CLOSED(3),
+
+    /**
+     * 押金退回失败
+     */
+    DEPOSIT_RETURN_FAIL(4)
+
+    ;
 
 
 

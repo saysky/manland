@@ -28,5 +28,11 @@ public interface OrderService extends BaseService<Order, Long> {
      */
     Page<Order> findAll(Order condition, Page<Order> page);
 
+    /**
+     * 查询有效订单
+     * @param postId
+     * @return
+     */
+    Order findByPostId(Long postId);
 
 }

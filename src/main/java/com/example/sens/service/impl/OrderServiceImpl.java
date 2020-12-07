@@ -60,4 +60,9 @@ public class OrderServiceImpl implements OrderService {
     public Page<Order> findAll(Order condition, Page<Order> page) {
         return page.setRecords(orderMapper.findAll(condition, page));
     }
+
+    @Override
+    public Order findByPostId(Long postId) {
+        return orderMapper.findByPostId(postId);
+    }
 }

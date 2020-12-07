@@ -92,6 +92,11 @@ public class Post extends BaseEntity {
     private Integer toiletCount;
 
     /**
+     * 押金
+     */
+    private Long deposit;
+
+    /**
      * 房屋所属分类
      */
     @TableField(exist = false)
@@ -110,4 +115,27 @@ public class Post extends BaseEntity {
     @TableField(exist = false)
     private User user;
 
+    /**
+     * 用于搜索
+     */
+    @TableField(exist = false)
+    private Integer minArea;
+
+    /**
+     * 用于搜索
+     */
+    @TableField(exist = false)
+    private Integer maxArea;
+
+    /**
+     * 用于搜索
+     */
+    @TableField(exist = false)
+    private Integer minPrice;
+
+    /**
+     * 用于搜索
+     */
+    @TableField(exist = false)
+    private Integer maxPrice;
 }

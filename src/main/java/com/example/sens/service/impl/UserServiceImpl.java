@@ -8,6 +8,7 @@ import com.example.sens.exception.MyBusinessException;
 import com.example.sens.common.constant.CommonConstant;
 import com.example.sens.entity.Role;
 import com.example.sens.mapper.OrderMapper;
+import com.example.sens.mapper.RechargeRecordMapper;
 import com.example.sens.mapper.UserMapper;
 import com.example.sens.entity.User;
 import com.example.sens.service.RoleService;
@@ -36,6 +37,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private OrderMapper orderMapper;
+
+    @Autowired
+    private RechargeRecordMapper rechargeRecordMapper;
 
     @Override
     public User findByUserName(String userName) {
@@ -149,6 +153,13 @@ public class UserServiceImpl implements UserService {
             Map<String, Object> map = new HashMap<>();
             map.put("user_id", userId);
             orderMapper.deleteByMap(map);
+
+            Map<String, Object> map2 = new HashMap<>();
+            map.put("owner_user_id", userId);
+            orderMapper.deleteByMap(map2);
+
+            // 4.删除充值记录
+            rechargeRecordMapper.deleteByUserId(userId);
         }
     }
 

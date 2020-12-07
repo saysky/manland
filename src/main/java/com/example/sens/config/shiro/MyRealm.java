@@ -61,7 +61,7 @@ public class MyRealm extends AuthorizingRealm {
         }
         Role role = roleService.findByUserId(user.getId());
         if (role != null) {
-            user.setRole(role.getRole());
+            user.setRole(role);
         }
 
 

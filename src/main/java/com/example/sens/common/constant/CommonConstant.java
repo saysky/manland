@@ -20,4 +20,6 @@ public interface CommonConstant {
      * none
      */
     String NONE = "none";
+
+    String CONDITION = "condition";
 }

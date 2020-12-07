@@ -18,6 +18,7 @@
           t.user_avatar,
           t.user_desc,
           t.status,
+          t.money,
           t.create_time
       FROM
           user_role_ref r,
@@ -43,6 +44,7 @@
         t.user_avatar,
         t.user_desc,
         t.status,
+        t.money,
         t.create_time
         FROM
         user_role_ref r,
@@ -81,6 +83,7 @@
         t.user_avatar,
         t.user_desc,
         t.status,
+        t.money,
         t.create_time
         FROM
         user t
