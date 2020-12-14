@@ -21,6 +21,7 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -28,10 +29,7 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author 言曌
@@ -72,6 +70,7 @@ public class FrontPostController extends BaseController {
                            @RequestParam(value = "area", defaultValue = "") String area,
                            @RequestParam(value = "price", defaultValue = "") String price,
                            @RequestParam(value = "status", defaultValue = "-1") Integer status,
+                           HttpSession session,
                            Model model) {
         Post condition = new Post();
 
@@ -123,6 +122,14 @@ public class FrontPostController extends BaseController {
         model.addAttribute("onCount", postService.countByStatus(PostStatusEnum.ON_SALE.getCode()));
         model.addAttribute("offCount", postService.countByStatus(PostStatusEnum.OFF_SALE.getCode()));
 
+        if (cityId != null && cityId != -1) {
+            City city = cityService.get(cityId);
+            if (city != null) {
+                session.setAttribute("city", city);
+            }
+        } else {
+            session.removeAttribute("city");
+        }
         return "home/postList";
     }
 
@@ -138,6 +145,7 @@ public class FrontPostController extends BaseController {
     public String postDetails(@PathVariable("id") Long id,
                               @RequestParam(value = "startDate", required = false) String start,
                               @RequestParam(value = "quantity", defaultValue = "1") Integer quantity,
+                              HttpSession session,
                               Model model) {
 
         // 房屋
@@ -163,9 +171,28 @@ public class FrontPostController extends BaseController {
 
         List<Category> categoryList = categoryService.findAll();
         model.addAttribute("categoryList", categoryList);
+        List<City> cityList = cityService.findAll();
+        model.addAttribute("cityList", cityList);
 
-        List<Post> latestPostList = postService.getLatestPost(6);
+        City citySession = (City) session.getAttribute("city");
+        Long cityId = citySession == null ? null : citySession.getId();
+        List<Post> latestPostList = postService.getLatestPost(cityId, 6);
         model.addAttribute("latestPostList", latestPostList);
+
+        // 可以考虑优化下，暂时没有时间优化
+        List<Post> unionRentPost = postService.getUnionRentPost(post);
+        List<Order> orderList = new ArrayList<>();
+        for (Post temp : unionRentPost) {
+            Order order = orderService.findByPostId(temp.getId());
+            if (order == null) {
+                order = new Order();
+            } else {
+                order.setUser(userService.get(order.getUserId()));
+            }
+            order.setPost(temp);
+            orderList.add(order);
+        }
+        model.addAttribute("orderList", orderList);
         return "home/post";
     }
 
@@ -220,7 +247,8 @@ public class FrontPostController extends BaseController {
         // 分类列表
         List<Category> categoryList = categoryService.findAll();
         model.addAttribute("categoryList", categoryList);
-
+        List<City> cityList = cityService.findAll();
+        model.addAttribute("cityList", cityList);
         model.addAttribute("post", post);
         model.addAttribute("startDate", start);
         model.addAttribute("quantity", quantity);
@@ -306,7 +334,8 @@ public class FrontPostController extends BaseController {
         // 分类列表
         List<Category> categoryList = categoryService.findAll();
         model.addAttribute("categoryList", categoryList);
-
+        List<City> cityList = cityService.findAll();
+        model.addAttribute("cityList", cityList);
         model.addAttribute("user", userService.get(order.getUserId()));
         return "home/order";
     }
@@ -340,7 +369,8 @@ public class FrontPostController extends BaseController {
 //        }
 
         model.addAttribute("order", order);
-
+        List<City> cityList = cityService.findAll();
+        model.addAttribute("cityList", cityList);
         List<Category> categoryList = categoryService.findAll();
         model.addAttribute("categoryList", categoryList);
         return "home/agreement";
@@ -434,7 +464,8 @@ public class FrontPostController extends BaseController {
 
         model.addAttribute("order", order);
 
-
+        List<City> cityList = cityService.findAll();
+        model.addAttribute("cityList", cityList);
         List<Category> categoryList = categoryService.findAll();
         model.addAttribute("categoryList", categoryList);
         return "home/pay";

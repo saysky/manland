@@ -157,6 +157,9 @@
         category c,
         city y
         <where>
+            <if test="cityId != null and cityId != -1">
+                p.city_id = #{cityId} AND
+            </if>
             p.post_status = 0 AND
             p.cate_id = c.id AND
             p.city_id = y.id AND
@@ -169,6 +172,19 @@
 
     <select id="countByStatus" resultType="java.lang.Integer">
         SELECT count(*) FROM post WHERE post_status = #{postStatus} AND del_flag = 0
+    </select>
+
+    <select id="getUnionRentPost" resultMap="BaseResultMap">
+        SELECT * FROM post p
+        <where>
+            p.user_id = #{userId} AND
+            p.city_id = #{cityId} AND
+            p.post_title LIKE #{postTitle} AND
+            p.number LIKE '%${number}%' AND
+            p.cate_id = 2 AND
+            p.del_flag = 0
+        </where>
+        order by p.number asc
     </select>
 
 

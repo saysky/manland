@@ -22,7 +22,6 @@ public interface PostService extends BaseService<Post, Long> {
     Page<Post> findPostByCondition(Post condition, Page<Post> page);
 
 
-
     /**
      * 根据租客userId查询
      *
@@ -35,10 +34,11 @@ public interface PostService extends BaseService<Post, Long> {
     /**
      * 获得最新房屋
      *
+     * @param cityId
      * @param limit
      * @return
      */
-    List<Post> getLatestPost(int limit);
+    List<Post> getLatestPost(Long cityId, int limit);
 
     /**
      * 根据状态统计
@@ -48,5 +48,10 @@ public interface PostService extends BaseService<Post, Long> {
      */
     Integer countByStatus(Integer postStatus);
 
-
+    /**
+     * 获得合租房屋
+     *
+     * @return
+     */
+    List<Post> getUnionRentPost(Post post);
 }

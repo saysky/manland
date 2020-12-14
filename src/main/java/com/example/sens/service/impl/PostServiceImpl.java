@@ -28,9 +28,6 @@ public class PostServiceImpl implements PostService {
     @Autowired
     private PostMapper postMapper;
 
-    @Autowired
-    private OrderMapper orderMapper;
-
     @Override
     public Page<Post> findPostByCondition(Post condition, Page<Post> page) {
         List<Post> postList = postMapper.findPostByCondition(condition, page);
@@ -95,14 +92,32 @@ public class PostServiceImpl implements PostService {
         return post;
     }
 
+
     @Override
-    public List<Post> getLatestPost(int limit) {
-        return postMapper.getLatestPost(limit);
+    public List<Post> getLatestPost(Long cityId, int limit) {
+        return postMapper.getLatestPost(cityId, limit);
     }
 
     @Override
     public Integer countByStatus(Integer postStatus) {
         return postMapper.countByStatus(postStatus);
     }
+
+    @Override
+    public List<Post> getUnionRentPost(Post post) {
+
+        Post temp = new Post();
+        temp.setNumber(post.getNumber());
+        temp.setUserId(post.getUserId());
+        temp.setPostTitle(post.getPostTitle());
+        temp.setCityId(post.getCityId());
+        if (temp.getNumber() != null && temp.getNumber().length() > 2) {
+            if (temp.getNumber().indexOf("室") != -1) {
+                temp.setNumber(temp.getNumber().substring(0, temp.getNumber().indexOf("室") + 1));
+            }
+        }
+        return postMapper.getUnionRentPost(temp);
+    }
+
 }
 

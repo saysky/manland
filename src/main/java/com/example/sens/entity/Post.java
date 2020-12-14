@@ -138,4 +138,5 @@ public class Post extends BaseEntity {
      */
     @TableField(exist = false)
     private Integer maxPrice;
+
 }

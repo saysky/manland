@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Objects;
 
@@ -35,15 +36,20 @@ public class IndexController extends BaseController {
     private NoticeService noticeService;
 
     @GetMapping("/")
-    public String index(Model model) {
+    public String index(Model model, HttpSession session) {
+
         List<Category> categoryList = categoryService.findAll();
         model.addAttribute("categoryList", categoryList);
 
         List<City> cityList = cityService.findAll();
         model.addAttribute("cityList", cityList);
 
-        List<Post> latestPostList = postService.getLatestPost(6);
+
+        City city = (City) session.getAttribute("city");
+        Long cityId = city == null ? null : city.getId();
+        List<Post> latestPostList = postService.getLatestPost(cityId, 6);
         model.addAttribute("latestPostList", latestPostList);
+
         return "home/index";
     }
 
@@ -68,6 +74,8 @@ public class IndexController extends BaseController {
         List<Category> categoryList = categoryService.findAll();
         model.addAttribute("categoryList", categoryList);
 
+        List<City> cityList = cityService.findAll();
+        model.addAttribute("cityList", cityList);
 
         Page page = PageUtil.initMpPage(pageNumber, pageSize, sort, order);
         Page<Notice> postPage = noticeService.findAll(page);
@@ -102,6 +110,8 @@ public class IndexController extends BaseController {
         List<Category> categoryList = categoryService.findAll();
         model.addAttribute("categoryList", categoryList);
 
+        List<City> cityList = cityService.findAll();
+        model.addAttribute("cityList", cityList);
         return "home/notice";
     }
 

@@ -45,10 +45,11 @@ public interface PostMapper extends BaseMapper<Post> {
     /**
      * 获得最新房屋
      *
+     * @param cityId
      * @param limit
      * @return
      */
-    List<Post> getLatestPost(int limit);
+    List<Post> getLatestPost(@Param("cityId") Long cityId, @Param("limit") Integer limit);
 
     /**
      * 根据状态统计
@@ -58,6 +59,12 @@ public interface PostMapper extends BaseMapper<Post> {
      */
     Integer countByStatus(Integer postStatus);
 
+    /**
+     * 获得合租房屋
+     *
+     * @return
+     */
+    List<Post> getUnionRentPost(Post post);
 
 }
 
