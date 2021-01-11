@@ -29,10 +29,10 @@
         FROM recharge_record t
         LEFT JOIN user u ON t.user_id = u.id AND u.del_flag = 0
         <where>
-            <if test="startDate != null and startDate != ''">
+            <if test="startDate != null and startDate != '' and startDate != 'null'">
                 t.create_time >= STR_TO_DATE( #{startDate}, "%Y-%m-%d" ) AND
             </if>
-            <if test="endDate != null and endDate != ''">
+            <if test="endDate != null and endDate != '' and endDate != 'null'">
                 t.create_time &lt;= STR_TO_DATE( #{endDate}, "%Y-%m-%d" )+1 AND
             </if>
             t.del_flag = 0
@@ -46,10 +46,10 @@
         FROM recharge_record t
         LEFT JOIN user u ON t.user_id = u.id AND u.del_flag = 0
         <where>
-            <if test="startDate != null and startDate != ''">
+            <if test="startDate != null and startDate != '' and startDate != 'null'">
                 t.create_time >= STR_TO_DATE( #{startDate}, "%Y-%m-%d" ) AND
             </if>
-            <if test="endDate != null and endDate != ''">
+            <if test="endDate != null and endDate != '' and endDate != ''">
                 t.create_time &lt;= STR_TO_DATE( #{endDate}, "%Y-%m-%d" )+1 AND
             </if>
             <if test="userId != null">
@@ -65,10 +65,10 @@
         FROM
         recharge_record
         <where>
-            <if test="startDate != null and startDate != ''">
+            <if test="startDate != null and startDate != '' and startDate != 'null'">
                 create_time >= STR_TO_DATE( #{startDate}, "%Y-%m-%d" ) AND
             </if>
-            <if test="endDate != null and endDate != ''">
+            <if test="endDate != null and endDate != '' and endDate != 'null'">
                 create_time &lt;= STR_TO_DATE( #{endDate}, "%Y-%m-%d" )+1 AND
             </if>
             del_flag = 0

@@ -86,24 +86,28 @@ public class ProfileController extends BaseController {
      * @param newPass    新密码
      * @return JsonResult
      */
-    @PostMapping(value = "/changePass")
+    @RequestMapping(method = RequestMethod.POST, value = "/changePass")
     @ResponseBody
-    public JsonResult changePass(@ModelAttribute("beforePass") String beforePass,
-                                 @ModelAttribute("newPass") String newPass) {
-
-        // 1.密码长度是否合法
-        if (newPass.length() > 20 || newPass.length() < 6) {
-            return JsonResult.error("用户密码长度为6-20位!");
-        }
-
-        // 2.比较密码
+    public JsonResult changePass(@RequestParam(value = "id", required = false) Long id,
+                                 @RequestParam(value = "beforePass", required = false) String beforePass,
+                                 @RequestParam("newPass") String newPass) {
         User loginUser = getLoginUser();
-        User user = userService.get(loginUser.getId());
-        if (user != null && Objects.equals(user.getUserPass(), Md5Util.toMd5(beforePass, CommonConstant.PASSWORD_SALT, 10))) {
-            userService.updatePassword(user.getId(), newPass);
+        if (id == null) {
+            // 用户修改密码
+            User user = userService.get(loginUser.getId());
+            if (user != null && Objects.equals(user.getUserPass(), Md5Util.toMd5(beforePass, CommonConstant.PASSWORD_SALT, 10))) {
+                userService.updatePassword(user.getId(), newPass);
+            } else {
+                return JsonResult.error("旧密码错误");
+            }
         } else {
-            return JsonResult.error("旧密码错误");
+            // 管理员修改用户密码
+            if (!loginUserIsAdmin()) {
+                return JsonResult.error("无权操作");
+            }
+            userService.updatePassword(id, newPass);
         }
+
         return JsonResult.success("密码重置成功");
     }
 

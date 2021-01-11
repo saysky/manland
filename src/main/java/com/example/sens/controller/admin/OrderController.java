@@ -195,6 +195,8 @@ public class OrderController extends BaseController {
 
         Integer totalPrice = orderService.getTotalPriceSum(condition);
         model.addAttribute("totalPrice", totalPrice == null ? 0 : totalPrice);
+        model.addAttribute("startDate", startDate);
+        model.addAttribute("endDate", endDate);
         return "admin/admin_finance";
     }
 

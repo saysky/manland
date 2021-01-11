@@ -200,7 +200,7 @@
     </pluginRepositories>
 
     <build>
-        <finalName>app</finalName>
+        <finalName>manland</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

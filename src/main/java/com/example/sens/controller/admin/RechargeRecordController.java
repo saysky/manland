@@ -54,6 +54,8 @@ public class RechargeRecordController extends BaseController {
 
         model.addAttribute("rechargeRecords", rechargeRecords.getRecords());
         model.addAttribute("pageInfo", PageUtil.convertPageVo(page));
+        model.addAttribute("startDate", startDate);
+        model.addAttribute("endDate", endDate);
         return "admin/admin_rechargeRecord";
     }
 

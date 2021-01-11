@@ -2,7 +2,6 @@ target/
 logs/
 out/
 !.mvn/wrapper/maven-wrapper.jar
-
 ### STS ###
 .apt_generated
 .classpath
@@ -11,14 +10,12 @@ out/
 .settings
 .springBeans
 .sts4-cache
-
 ### IntelliJ IDEA ###
 .idea
 *.iws
 *.iml
 *.ipr
 log/
-
 ### NetBeans ###
 nbproject/private/
 build/
@@ -26,11 +23,9 @@ nbbuild/
 dist/
 nbdist/
 .nb-gradle/
-
 ### Mac
 .DS_Store
 */.DS_Store
-
 ### VS Code ###
 *.project
 *.factorypath

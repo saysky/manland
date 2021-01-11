@@ -54,7 +54,13 @@ public class IndexController extends BaseController {
     }
 
     @GetMapping("/contact")
-    public String contact() {
+    public String contact(Model model) {
+        List<Category> categoryList = categoryService.findAll();
+        model.addAttribute("categoryList", categoryList);
+
+        List<City> cityList = cityService.findAll();
+        model.addAttribute("cityList", cityList);
+
         return "home/contact";
     }
 
