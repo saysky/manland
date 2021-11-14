@@ -3,7 +3,7 @@
 
 
 详细介绍：[https://liuyanzhao.com/shop/manland.html](https://liuyanzhao.com/shop/manland.html) <br/>
-预览地址：[https://manland.liuyanzhao.com](https://manland.liuyanzhao.com)  <br/> <br/>
+预览地址：[http://manland.liuyanzhao.com](http://manland.liuyanzhao.com)  <br/> <br/>
 开发时间 2020年10月17日，最近更新2021年03月17日 <br/>
 
 
