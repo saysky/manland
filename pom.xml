@@ -192,12 +192,12 @@
         </repository>
     </repositories>
 
-    <pluginRepositordruidies>
+    <pluginRepositories>
         <pluginRepository>
             <id>aliyun</id>
             <url>http://maven.aliyun.com/nexus/content/groups/public</url>
         </pluginRepository>
-    </pluginRepositordruidies>
+    </pluginRepositories>
 
     <build>
         <finalName>manland</finalName>
