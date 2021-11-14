@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.example</groupId>
     <artifactId>Manland</artifactId>
-    <version>1.0.0</version>
+    <version>4.0.0</version>
     <name>Manland</name>
 
 
@@ -145,13 +145,6 @@
             <version>26.0-jre</version>
         </dependency>
 
-        <dependency>
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
-            <version>2.9.0</version>
-        </dependency>
-
-
         <!--Shiro-->
         <dependency>
             <groupId>org.apache.shiro</groupId>
@@ -184,6 +177,13 @@
             <version>4.12</version>
         </dependency>
 
+        <!--        验证码-->
+        <dependency>
+            <groupId>com.github.penggle</groupId>
+            <artifactId>kaptcha</artifactId>
+            <version>2.3.2</version>
+        </dependency>
+
     </dependencies>
     <repositories>
         <repository>
@@ -192,12 +192,12 @@
         </repository>
     </repositories>
 
-    <pluginRepositories>
+    <pluginRepositordruidies>
         <pluginRepository>
             <id>aliyun</id>
             <url>http://maven.aliyun.com/nexus/content/groups/public</url>
         </pluginRepository>
-    </pluginRepositories>
+    </pluginRepositordruidies>
 
     <build>
         <finalName>manland</finalName>
