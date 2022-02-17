@@ -6,7 +6,9 @@
 预览地址：[http://manland.liuyanzhao.com](http://manland.liuyanzhao.com)  <br/> <br/>
 开发时间 2020年10月17日，最近更新2021年03月17日 <br/>
 
-
+- 最新消息 2022 最新租房系统地址：[2022 基于SpringBoot的房屋租赁平台 房屋展示平台 留学生房屋租赁平台](https://github.com/saysky/HouseKey)
+- SSM租房系统[https://github.com/saysky/verio](https://github.com/saysky/verio)
+- SpringBoot租房系统[https://github.com/saysky/verio-boot](https://github.com/saysky/verio-boot)
 #### 管理员功能：
 - 房屋管理
 - 租房类型管理(合租/整租)
