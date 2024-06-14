@@ -11,4 +11,3 @@
         FROM city c
         WHERE c.del_flag = 0
     </select>
-</mapper>

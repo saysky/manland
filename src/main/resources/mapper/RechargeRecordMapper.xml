@@ -74,4 +74,3 @@
             del_flag = 0
         </where>
     </select>
-</mapper>
